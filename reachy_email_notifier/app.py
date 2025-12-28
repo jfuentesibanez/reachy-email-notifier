@@ -1,23 +1,20 @@
 """Reachy Mini Email Notifier App - Main app class for Hugging Face integration."""
 
-import logging
 import sys
 import threading
 import time
+import traceback
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stderr  # Use stderr to ensure it appears in logs
-)
-logger = logging.getLogger(__name__)
+# Helper function to ensure logs appear in journalctl
+def log(msg):
+    """Print to stderr for visibility in journalctl."""
+    print(f"[EMAIL_NOTIFIER] {msg}", file=sys.stderr, flush=True)
 
 try:
     from reachy_mini import ReachyMini, ReachyMiniApp
     from reachy_mini.utils import create_head_pose
 except ImportError:
-    logger.warning("reachy_mini not installed. For Hugging Face app, install reachy-mini package.")
+    log("WARNING: reachy_mini not installed. For Hugging Face app, install reachy-mini package.")
     ReachyMiniApp = object
 
 # Import config here, but delay gmail_checker import until runtime
@@ -43,16 +40,17 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             reachy_mini: Already initialized and connected Reachy Mini instance
             stop_event: Event to signal when app should stop
         """
-        logger.info("=" * 70)
-        logger.info("🚀 Starting Reachy Mini Email Notifier...")
-        logger.info("=" * 70)
+        log("=" * 70)
+        log("🚀 Starting Reachy Mini Email Notifier...")
+        log("=" * 70)
 
         # Import GmailChecker here to avoid slow module-level imports
         try:
             from .gmail_checker import GmailChecker
-            logger.info("✓ Gmail checker module imported successfully")
+            log("✓ Gmail checker module imported successfully")
         except Exception as e:
-            logger.error(f"❌ Failed to import Gmail checker: {e}", exc_info=True)
+            log(f"❌ Failed to import Gmail checker: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
             return
 
         # Initialize instance variables
@@ -61,26 +59,27 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
 
         # Initialize Gmail checker
         try:
-            logger.info("📧 Connecting to Gmail...")
-            logger.info(f"Credentials path: {Config.GMAIL_CREDENTIALS_PATH}")
-            logger.info(f"Token path: {Config.GMAIL_TOKEN_PATH}")
+            log("📧 Connecting to Gmail...")
+            log(f"Credentials path: {Config.GMAIL_CREDENTIALS_PATH}")
+            log(f"Token path: {Config.GMAIL_TOKEN_PATH}")
 
             gmail_checker = GmailChecker(
                 credentials_path=Config.GMAIL_CREDENTIALS_PATH,
                 token_path=Config.GMAIL_TOKEN_PATH
             )
             previous_unread_count = gmail_checker.check_for_new_emails()
-            logger.info(f"✅ Gmail connected. Current unread emails: {previous_unread_count}")
+            log(f"✅ Gmail connected. Current unread emails: {previous_unread_count}")
         except Exception as e:
-            logger.error(f"❌ Failed to connect to Gmail: {e}", exc_info=True)
-            logger.error("Make sure credentials.json and token.pickle are in the correct location.")
+            log(f"❌ Failed to connect to Gmail: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
+            log("Make sure credentials.json and token.pickle are in the correct location.")
             return
 
-        logger.info("=" * 70)
-        logger.info(f"✨ Email notifier is now running!")
-        logger.info(f"📊 Checking for emails every {Config.CHECK_INTERVAL} seconds")
-        logger.info("Stop the app from the dashboard to exit")
-        logger.info("=" * 70)
+        log("=" * 70)
+        log(f"✨ Email notifier is now running!")
+        log(f"📊 Checking for emails every {Config.CHECK_INTERVAL} seconds")
+        log("Stop the app from the dashboard to exit")
+        log("=" * 70)
 
         # Main loop - check stop_event to gracefully exit
         while not stop_event.is_set():
@@ -91,12 +90,12 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                 # Detect new emails
                 if current_unread_count > previous_unread_count:
                     new_emails = current_unread_count - previous_unread_count
-                    logger.info(f"🎉 New email(s) detected! Count: {new_emails}")
+                    log(f"🎉 New email(s) detected! Count: {new_emails}")
 
                     # Get the subject of the latest email
                     subject = gmail_checker.get_latest_email_subject()
                     if subject:
-                        logger.info(f"📬 Subject: {subject}")
+                        log(f"📬 Subject: {subject}")
 
                     # Trigger Reachy notification
                     self._notify_with_reachy(reachy_mini, new_emails)
@@ -107,16 +106,17 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                 elif current_unread_count < previous_unread_count:
                     # Emails were read
                     previous_unread_count = current_unread_count
-                    logger.info(f"📭 Emails read. Current unread: {current_unread_count}")
+                    log(f"📭 Emails read. Current unread: {current_unread_count}")
 
                 # Wait for next check or until stop event
                 stop_event.wait(Config.CHECK_INTERVAL)
 
             except Exception as e:
-                logger.error(f"❌ Error in main loop: {e}", exc_info=True)
+                log(f"❌ Error in main loop: {e}")
+                log(f"Traceback: {traceback.format_exc()}")
                 stop_event.wait(Config.CHECK_INTERVAL)
 
-        logger.info("👋 Email notifier stopped!")
+        log("👋 Email notifier stopped!")
 
     def _notify_with_reachy(self, reachy_mini: ReachyMini, email_count: int):
         """
@@ -126,7 +126,7 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             reachy_mini: Reachy Mini instance
             email_count: Number of new emails received
         """
-        logger.info(f"📧 You have {email_count} new email(s)!")
+        log(f"📧 You have {email_count} new email(s)!")
 
         try:
             if email_count == 1:
@@ -138,11 +138,12 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             else:
                 self._happy_dance(reachy_mini)
         except Exception as e:
-            logger.error(f"Error during animation: {e}", exc_info=True)
+            log(f"Error during animation: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
 
     def _wave_hello(self, reachy_mini: ReachyMini):
         """Make Reachy wave its arm to greet new email."""
-        logger.info("🤖 Reachy is waving!")
+        log("🤖 Reachy is waving!")
 
         try:
             # Turn on the right arm
@@ -169,11 +170,12 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             reachy_mini.r_arm.turn_off()
 
         except Exception as e:
-            logger.error(f"Error during wave animation: {e}", exc_info=True)
+            log(f"Error during wave animation: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
 
     def _head_nod(self, reachy_mini: ReachyMini):
         """Make Reachy nod its head acknowledging the email."""
-        logger.info("👋 Reachy is nodding!")
+        log("👋 Reachy is nodding!")
 
         try:
             # Turn on the head
@@ -189,11 +191,12 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             reachy_mini.head.turn_off()
 
         except Exception as e:
-            logger.error(f"Error during head nod: {e}", exc_info=True)
+            log(f"Error during head nod: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
 
     def _happy_dance(self, reachy_mini: ReachyMini):
         """Make Reachy do a happy dance for multiple emails."""
-        logger.info("🎉 Reachy is doing a happy dance!")
+        log("🎉 Reachy is doing a happy dance!")
 
         try:
             # Turn on both arms
@@ -222,4 +225,5 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             reachy_mini.r_arm.turn_off()
 
         except Exception as e:
-            logger.error(f"Error during happy dance: {e}", exc_info=True)
+            log(f"Error during happy dance: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
