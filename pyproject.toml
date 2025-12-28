@@ -57,4 +57,4 @@ reachy-email-notifier = "reachy_email_notifier.main:main"
 packages = ["reachy_email_notifier"]
 
 [project.entry-points."reachy_mini.app"]
-email_notifier = "reachy_email_notifier.main:main"
+email_notifier = "reachy_email_notifier.app:ReachyMiniEmailNotifier"
