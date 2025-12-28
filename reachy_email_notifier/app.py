@@ -5,6 +5,9 @@ import threading
 import time
 import traceback
 
+# CRITICAL: Output immediately at module load to verify module loads
+print("[EMAIL_NOTIFIER] Module loading...", file=sys.stderr, flush=True)
+
 # Helper function to ensure logs appear in journalctl
 def log(msg):
     """Print to stderr for visibility in journalctl."""
@@ -13,13 +16,24 @@ def log(msg):
 try:
     from reachy_mini import ReachyMini, ReachyMiniApp
     from reachy_mini.utils import create_head_pose
-except ImportError:
-    log("WARNING: reachy_mini not installed. For Hugging Face app, install reachy-mini package.")
+    print("[EMAIL_NOTIFIER] reachy_mini imported successfully", file=sys.stderr, flush=True)
+except ImportError as e:
+    print(f"[EMAIL_NOTIFIER] WARNING: reachy_mini import failed: {e}", file=sys.stderr, flush=True)
     ReachyMiniApp = object
 
 # Import config here, but delay gmail_checker import until runtime
-from .config import Config
+try:
+    from .config import Config
+    print("[EMAIL_NOTIFIER] Config imported successfully", file=sys.stderr, flush=True)
+except Exception as e:
+    print(f"[EMAIL_NOTIFIER] ERROR importing config: {e}", file=sys.stderr, flush=True)
+    print(f"[EMAIL_NOTIFIER] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
+    Config = None
 
+print("[EMAIL_NOTIFIER] Module loaded, defining class...", file=sys.stderr, flush=True)
+
+
+print("[EMAIL_NOTIFIER] About to define ReachyMiniEmailNotifier class", file=sys.stderr, flush=True)
 
 class ReachyMiniEmailNotifier(ReachyMiniApp):
     """
@@ -33,6 +47,7 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
     custom_app_url: str | None = None
 
     def run(self, reachy_mini: ReachyMini, stop_event: threading.Event):
+        print("[EMAIL_NOTIFIER] run() method called!", file=sys.stderr, flush=True)
         """
         Main app logic - runs in background thread.
 
@@ -227,3 +242,5 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         except Exception as e:
             log(f"Error during happy dance: {e}")
             log(f"Traceback: {traceback.format_exc()}")
+
+print("[EMAIL_NOTIFIER] Class defined successfully, module fully loaded!", file=sys.stderr, flush=True)
