@@ -1,6 +1,7 @@
 """Configuration management for Reachy Email Notifier."""
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -15,8 +16,17 @@ class Config:
     REACHY_PORT = int(os.getenv('REACHY_PORT', '50055'))
 
     # Gmail API settings
-    GMAIL_CREDENTIALS_PATH = os.getenv('GMAIL_CREDENTIALS_PATH', 'credentials.json')
-    GMAIL_TOKEN_PATH = os.getenv('GMAIL_TOKEN_PATH', 'token.pickle')
+    # Use persistent directory that survives app updates
+    PERSISTENT_DIR = Path(os.getenv('REACHY_EMAIL_NOTIFIER_DIR',
+                                     Path.home() / '.reachy_email_notifier'))
+
+    # Create persistent directory if it doesn't exist
+    PERSISTENT_DIR.mkdir(parents=True, exist_ok=True)
+
+    GMAIL_CREDENTIALS_PATH = os.getenv('GMAIL_CREDENTIALS_PATH',
+                                       str(PERSISTENT_DIR / 'credentials.json'))
+    GMAIL_TOKEN_PATH = os.getenv('GMAIL_TOKEN_PATH',
+                                 str(PERSISTENT_DIR / 'token.pickle'))
 
     # Email checking interval (seconds)
     CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '60'))
