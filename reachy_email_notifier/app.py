@@ -4,7 +4,6 @@ import logging
 import sys
 import threading
 import time
-from typing import Optional
 
 # Set up logging
 logging.basicConfig(
@@ -21,7 +20,7 @@ except ImportError:
     logger.warning("reachy_mini not installed. For Hugging Face app, install reachy-mini package.")
     ReachyMiniApp = object
 
-from .gmail_checker import GmailChecker
+# Import config here, but delay gmail_checker import until runtime
 from .config import Config
 
 
@@ -48,8 +47,16 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         logger.info("🚀 Starting Reachy Mini Email Notifier...")
         logger.info("=" * 70)
 
+        # Import GmailChecker here to avoid slow module-level imports
+        try:
+            from .gmail_checker import GmailChecker
+            logger.info("✓ Gmail checker module imported successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to import Gmail checker: {e}", exc_info=True)
+            return
+
         # Initialize instance variables
-        gmail_checker: Optional[GmailChecker] = None
+        gmail_checker = None
         previous_unread_count = 0
 
         # Initialize Gmail checker
