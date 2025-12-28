@@ -1,19 +1,99 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<title>My static Space</title>
-		<link rel="stylesheet" href="style.css" />
-	</head>
-	<body>
-		<div class="card">
-			<h1>Welcome to your static Space!</h1>
-			<p>You can modify this app directly by editing <i>index.html</i> in the Files and versions tab.</p>
-			<p>
-				Also don't forget to check the
-				<a href="https://huggingface.co/docs/hub/spaces" target="_blank">Spaces documentation</a>.
-			</p>
-		</div>
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reachy Mini Email Notifier</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Reachy Mini Email Notifier</h1>
+            <p class="tagline">Get notified with cute robot animations when you receive Gmail messages!</p>
+        </div>
+
+        <div class="hero">
+            <div class="emoji-icon">📬🤖</div>
+        </div>
+
+        <div class="features">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👋</div>
+                    <h3>Friendly Wave</h3>
+                    <p>One new email? Reachy waves hello!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👍</div>
+                    <h3>Head Nod</h3>
+                    <p>2-3 emails? Wave + acknowledging nod</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎉</div>
+                    <h3>Happy Dance</h3>
+                    <p>4+ emails? Celebrate with a happy dance!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup">
+            <h2>Setup Instructions</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Install the App</h3>
+                        <p>Install from your Reachy Mini dashboard's Hugging Face app store</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Set Up Gmail API</h3>
+                        <p>Follow the <a href="https://github.com/jfuentesibanez/reachy-email-notifier#gmail-api-setup" target="_blank">Gmail API setup guide</a> to create credentials</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Configure & Run</h3>
+                        <p>Place your <code>credentials.json</code> file in the app directory and start the app!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-details">
+            <h2>Technical Details</h2>
+            <ul>
+                <li><strong>Gmail Integration:</strong> Uses OAuth2 for secure, read-only access</li>
+                <li><strong>Configurable:</strong> Adjust check intervals via environment variables</li>
+                <li><strong>Privacy-First:</strong> All processing happens locally on your Reachy</li>
+                <li><strong>Open Source:</strong> MIT licensed, community contributions welcome</li>
+            </ul>
+        </div>
+
+        <div class="links">
+            <h2>Links & Resources</h2>
+            <div class="link-buttons">
+                <a href="https://github.com/jfuentesibanez/reachy-email-notifier" class="button" target="_blank">
+                    <span>📦</span> GitHub Repository
+                </a>
+                <a href="https://github.com/jfuentesibanez/reachy-email-notifier/blob/master/README.md" class="button" target="_blank">
+                    <span>📖</span> Full Documentation
+                </a>
+                <a href="https://github.com/jfuentesibanez/reachy-email-notifier/blob/master/CONTRIBUTING.md" class="button" target="_blank">
+                    <span>🤝</span> Contribute
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Created for the Reachy community</p>
+            <p class="small">Open source under MIT License</p>
+        </div>
+    </div>
+</body>
 </html>

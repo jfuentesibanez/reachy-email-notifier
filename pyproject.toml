@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reachy-email-notifier"
+version = "1.0.0"
+description = "A cute email notification app for Reachy robots - get notified with adorable animations when you receive Gmail messages"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Reachy Community", email = "noreply@example.com"},
+]
+keywords = ["reachy", "robotics", "email", "gmail", "notification", "reachy-mini"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Communications :: Email",
+    "Topic :: Home Automation",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "google-auth>=2.0.0",
+    "google-auth-oauthlib>=1.0.0",
+    "google-auth-httplib2>=0.1.0",
+    "google-api-python-client>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+reachy2 = ["reachy-sdk>=1.0.0"]
+reachy-mini = ["reachy-mini>=0.1.0"]
+dev = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "flake8>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jfuentesibanez/reachy-email-notifier"
+Documentation = "https://github.com/jfuentesibanez/reachy-email-notifier#readme"
+Repository = "https://github.com/jfuentesibanez/reachy-email-notifier"
+Issues = "https://github.com/jfuentesibanez/reachy-email-notifier/issues"
+
+[project.scripts]
+reachy-email-notifier = "reachy_email_notifier.main:main"
+
+[tool.setuptools]
+packages = ["reachy_email_notifier"]
+
+[project.entry-points."reachy_mini.app"]
+email_notifier = "reachy_email_notifier.main:main"
