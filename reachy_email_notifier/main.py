@@ -1,4 +1,9 @@
-"""Main application for Reachy Email Notifier."""
+"""Main application for Reachy Email Notifier.
+
+This module provides both:
+1. Standalone mode (for Reachy 2 with reachy-sdk)
+2. Reachy Mini App mode (for Hugging Face community apps)
+"""
 
 import time
 import signal
@@ -7,7 +12,20 @@ from typing import Optional
 
 from .config import Config
 from .gmail_checker import GmailChecker
-from .reachy_controller import ReachyNotifier
+
+# Try to import for standalone mode
+try:
+    from .reachy_controller import ReachyNotifier
+    STANDALONE_MODE_AVAILABLE = True
+except ImportError:
+    STANDALONE_MODE_AVAILABLE = False
+
+# Try to import for Reachy Mini App mode
+try:
+    from .app import ReachyMiniEmailNotifier
+    REACHY_MINI_APP_AVAILABLE = True
+except ImportError:
+    REACHY_MINI_APP_AVAILABLE = False
 
 
 class EmailNotifierApp:
@@ -131,5 +149,21 @@ class EmailNotifierApp:
         app.run()
 
 
+def main():
+    """Entry point for the application."""
+    # For Reachy Mini App mode, export the app class
+    if REACHY_MINI_APP_AVAILABLE:
+        return ReachyMiniEmailNotifier()
+
+    # For standalone mode, run the full application
+    if STANDALONE_MODE_AVAILABLE:
+        EmailNotifierApp.start()
+    else:
+        print("Error: Neither reachy-mini nor reachy-sdk is available.")
+        print("Please install one of:")
+        print("  - pip install reachy-mini (for Reachy Mini)")
+        print("  - pip install reachy-sdk (for Reachy 2)")
+
+
 if __name__ == '__main__':
-    EmailNotifierApp.start()
+    main()
