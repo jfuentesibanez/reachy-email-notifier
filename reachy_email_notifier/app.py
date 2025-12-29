@@ -43,8 +43,17 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
     animations when new emails arrive.
     """
 
+    # App name
+    name: str = "reachy_email_notifier"
+
     # Optional: URL to custom configuration page
     custom_app_url: str | None = None
+
+    def __new__(cls):
+        print("[EMAIL_NOTIFIER] __new__() called - class is being instantiated!", file=sys.stderr, flush=True)
+        instance = super().__new__(cls)
+        print("[EMAIL_NOTIFIER] __new__() completed", file=sys.stderr, flush=True)
+        return instance
 
     def run(self, reachy_mini: ReachyMini, stop_event: threading.Event):
         print("[EMAIL_NOTIFIER] run() method called!", file=sys.stderr, flush=True)
