@@ -110,6 +110,7 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             try:
                 # Check for new emails
                 current_unread_count = gmail_checker.check_for_new_emails()
+                log(f"🔍 Checked Gmail: {current_unread_count} unread (was {previous_unread_count})")
 
                 # Detect new emails
                 if current_unread_count > previous_unread_count:
