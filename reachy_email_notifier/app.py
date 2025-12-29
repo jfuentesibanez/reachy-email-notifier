@@ -79,7 +79,6 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
 
         # Initialize instance variables
         gmail_checker = None
-        previous_unread_count = 0
 
         # Initialize Gmail checker
         try:
@@ -91,8 +90,9 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                 credentials_path=Config.GMAIL_CREDENTIALS_PATH,
                 token_path=Config.GMAIL_TOKEN_PATH
             )
-            previous_unread_count = gmail_checker.check_for_new_emails()
-            log(f"✅ Gmail connected. Current unread emails: {previous_unread_count}")
+            # First check initializes the tracker (returns 0)
+            gmail_checker.check_for_new_emails()
+            log(f"✅ Gmail connected. Now tracking inbox for new emails.")
         except Exception as e:
             log(f"❌ Failed to connect to Gmail: {e}")
             log(f"Traceback: {traceback.format_exc()}")
@@ -108,14 +108,12 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         # Main loop - check stop_event to gracefully exit
         while not stop_event.is_set():
             try:
-                # Check for new emails
-                current_unread_count = gmail_checker.check_for_new_emails()
-                log(f"🔍 Checked Gmail: {current_unread_count} unread (was {previous_unread_count})")
+                # Check for new emails (returns count of NEW emails since last check)
+                new_email_count = gmail_checker.check_for_new_emails()
 
-                # Detect new emails
-                if current_unread_count > previous_unread_count:
-                    new_emails = current_unread_count - previous_unread_count
-                    log(f"🎉 New email(s) detected! Count: {new_emails}")
+                # Trigger notification if we have new emails
+                if new_email_count > 0:
+                    log(f"🎉 {new_email_count} new email(s) detected!")
 
                     # Get the subject of the latest email
                     subject = gmail_checker.get_latest_email_subject()
@@ -123,15 +121,7 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                         log(f"📬 Subject: {subject}")
 
                     # Trigger Reachy notification
-                    self._notify_with_reachy(reachy_mini, new_emails)
-
-                    # Update previous count
-                    previous_unread_count = current_unread_count
-
-                elif current_unread_count < previous_unread_count:
-                    # Emails were read
-                    previous_unread_count = current_unread_count
-                    log(f"📭 Emails read. Current unread: {current_unread_count}")
+                    self._notify_with_reachy(reachy_mini, new_email_count)
 
                 # Wait for next check or until stop event
                 stop_event.wait(Config.CHECK_INTERVAL)
