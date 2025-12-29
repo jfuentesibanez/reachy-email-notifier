@@ -16,10 +16,12 @@ def log(msg):
 try:
     from reachy_mini import ReachyMini, ReachyMiniApp
     from reachy_mini.utils import create_head_pose
+    import numpy as np
     print("[EMAIL_NOTIFIER] reachy_mini imported successfully", file=sys.stderr, flush=True)
 except ImportError as e:
     print(f"[EMAIL_NOTIFIER] WARNING: reachy_mini import failed: {e}", file=sys.stderr, flush=True)
     ReachyMiniApp = object
+    np = None
 
 # Import config here, but delay gmail_checker import until runtime
 try:
@@ -157,32 +159,31 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             log(f"Traceback: {traceback.format_exc()}")
 
     def _wave_hello(self, reachy_mini: ReachyMini):
-        """Make Reachy wave its arm to greet new email."""
-        log("🤖 Reachy is waving!")
+        """Make Reachy wave its antennas to greet new email."""
+        log("🤖 Reachy is waving antennas!")
 
         try:
-            # Turn on the right arm
-            reachy_mini.r_arm.turn_on()
-
-            # Move to a waving position
-            reachy_mini.r_arm.shoulder.pitch.goal_position = -20
-            reachy_mini.r_arm.elbow.pitch.goal_position = -80
-            time.sleep(1)
-
-            # Wave motion
+            # Wave antennas side to side
             for _ in range(3):
-                reachy_mini.r_arm.shoulder.roll.goal_position = -30
+                reachy_mini.goto_target(
+                    antennas=np.deg2rad([60, 60]),  # Antennas out
+                    duration=0.3,
+                    method="minjerk"
+                )
                 time.sleep(0.3)
-                reachy_mini.r_arm.shoulder.roll.goal_position = 0
+                reachy_mini.goto_target(
+                    antennas=np.deg2rad([-30, -30]),  # Antennas in
+                    duration=0.3,
+                    method="minjerk"
+                )
                 time.sleep(0.3)
 
-            # Return to rest position
-            reachy_mini.r_arm.shoulder.pitch.goal_position = 0
-            reachy_mini.r_arm.elbow.pitch.goal_position = 0
-            time.sleep(1)
-
-            # Turn off the arm to save power
-            reachy_mini.r_arm.turn_off()
+            # Return to neutral
+            reachy_mini.goto_target(
+                antennas=np.deg2rad([0, 0]),
+                duration=0.5,
+                method="minjerk"
+            )
 
         except Exception as e:
             log(f"Error during wave animation: {e}")
@@ -193,17 +194,20 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         log("👋 Reachy is nodding!")
 
         try:
-            # Turn on the head
-            reachy_mini.head.turn_on()
-
-            # Nod motion
+            # Nod motion - move head up and down
             for _ in range(2):
-                reachy_mini.head.neck.pitch.goal_position = 20
+                reachy_mini.goto_target(
+                    head=create_head_pose(z=-15, mm=True),  # Nod down
+                    duration=0.4,
+                    method="minjerk"
+                )
                 time.sleep(0.4)
-                reachy_mini.head.neck.pitch.goal_position = 0
+                reachy_mini.goto_target(
+                    head=create_head_pose(z=0, mm=True),  # Back to center
+                    duration=0.4,
+                    method="minjerk"
+                )
                 time.sleep(0.4)
-
-            reachy_mini.head.turn_off()
 
         except Exception as e:
             log(f"Error during head nod: {e}")
@@ -214,30 +218,43 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         log("🎉 Reachy is doing a happy dance!")
 
         try:
-            # Turn on both arms
-            reachy_mini.l_arm.turn_on()
-            reachy_mini.r_arm.turn_on()
-
-            # Simple happy dance - alternate arm movements
+            # Happy dance - spin body and wiggle antennas
             for _ in range(2):
-                # Raise left arm
-                reachy_mini.l_arm.shoulder.pitch.goal_position = -40
-                reachy_mini.r_arm.shoulder.pitch.goal_position = 0
+                # Spin right with excited antennas
+                reachy_mini.goto_target(
+                    body_yaw=np.deg2rad(30),
+                    antennas=np.deg2rad([90, 30]),
+                    head=create_head_pose(z=5, mm=True),
+                    duration=0.5,
+                    method="cartoon"  # Fun bouncy movement
+                )
                 time.sleep(0.5)
 
-                # Raise right arm
-                reachy_mini.l_arm.shoulder.pitch.goal_position = 0
-                reachy_mini.r_arm.shoulder.pitch.goal_position = -40
+                # Spin left with excited antennas
+                reachy_mini.goto_target(
+                    body_yaw=np.deg2rad(-30),
+                    antennas=np.deg2rad([30, 90]),
+                    head=create_head_pose(z=5, mm=True),
+                    duration=0.5,
+                    method="cartoon"
+                )
                 time.sleep(0.5)
 
-            # Return to rest
-            reachy_mini.l_arm.shoulder.pitch.goal_position = 0
-            reachy_mini.r_arm.shoulder.pitch.goal_position = 0
-            time.sleep(1)
+            # Return to center with happy antennas up
+            reachy_mini.goto_target(
+                body_yaw=np.deg2rad(0),
+                antennas=np.deg2rad([45, 45]),
+                head=create_head_pose(z=0, mm=True),
+                duration=0.8,
+                method="minjerk"
+            )
+            time.sleep(0.5)
 
-            # Turn off arms
-            reachy_mini.l_arm.turn_off()
-            reachy_mini.r_arm.turn_off()
+            # Antennas back to neutral
+            reachy_mini.goto_target(
+                antennas=np.deg2rad([0, 0]),
+                duration=0.5
+            )
 
         except Exception as e:
             log(f"Error during happy dance: {e}")
