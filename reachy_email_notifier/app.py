@@ -4,6 +4,8 @@ import sys
 import threading
 import time
 import traceback
+import tempfile
+import os
 
 # CRITICAL: Output immediately at module load to verify module loads
 print("[EMAIL_NOTIFIER] Module loading...", file=sys.stderr, flush=True)
@@ -146,16 +148,86 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         log(f"📧 You have {email_count} new email(s)!")
 
         try:
+            # Speak the notification
             if email_count == 1:
+                self._speak(reachy_mini, "You have a new email. Check your inbox!")
                 self._wave_hello(reachy_mini)
             elif email_count <= 3:
+                self._speak(reachy_mini, f"You have {email_count} new emails. Check your inbox!")
                 self._wave_hello(reachy_mini)
                 time.sleep(0.5)
                 self._head_nod(reachy_mini)
             else:
+                self._speak(reachy_mini, f"Wow! You have {email_count} new emails!")
                 self._happy_dance(reachy_mini)
         except Exception as e:
             log(f"Error during animation: {e}")
+            log(f"Traceback: {traceback.format_exc()}")
+
+    def _speak(self, reachy_mini: ReachyMini, text: str):
+        """
+        Make Reachy speak the given text using TTS.
+
+        Args:
+            reachy_mini: Reachy Mini instance
+            text: Text to speak
+        """
+        log(f"🔊 Speaking: {text}")
+
+        try:
+            import pyttsx3
+            import soundfile as sf
+            from scipy import signal
+
+            # Create temp file for audio
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_file:
+                temp_path = tmp_file.name
+
+            try:
+                # Generate TTS audio
+                engine = pyttsx3.init()
+                engine.setProperty('rate', 150)  # Speed of speech
+                engine.save_to_file(text, temp_path)
+                engine.runAndWait()
+
+                # Load the audio file
+                data, samplerate_in = sf.read(temp_path, dtype='float32')
+
+                # Get Reachy's audio sample rate
+                samplerate_out = reachy_mini.media.get_output_audio_samplerate()
+
+                # Resample if needed
+                if samplerate_in != samplerate_out:
+                    num_samples = int(len(data) * samplerate_out / samplerate_in)
+                    data = signal.resample(data, num_samples)
+
+                # Convert to mono if stereo
+                if len(data.shape) > 1:
+                    data = np.mean(data, axis=1)
+
+                # Play audio through Reachy's speaker
+                reachy_mini.media.start_playing()
+                chunk_size = 1024
+                for i in range(0, len(data), chunk_size):
+                    chunk = data[i : i + chunk_size]
+                    reachy_mini.media.push_audio_sample(chunk)
+
+                # Wait for audio to finish (approximate)
+                duration = len(data) / samplerate_out
+                time.sleep(duration)
+
+                reachy_mini.media.stop_playing()
+
+            finally:
+                # Clean up temp file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+
+        except ImportError as e:
+            log(f"⚠️  TTS dependencies not available: {e}")
+            log("Install with: pip install pyttsx3 soundfile scipy")
+        except Exception as e:
+            log(f"Error during speech: {e}")
             log(f"Traceback: {traceback.format_exc()}")
 
     def _wave_hello(self, reachy_mini: ReachyMini):
