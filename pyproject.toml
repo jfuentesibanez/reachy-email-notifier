@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reachy-email-notifier"
-version = "1.2.0"
+version = "1.2.1"
 description = "A cute email notification app for Reachy robots - get notified with adorable animations when you receive Gmail messages"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,7 +32,6 @@ dependencies = [
     "google-auth-oauthlib>=1.0.0",
     "google-auth-httplib2>=0.1.0",
     "google-api-python-client>=2.0.0",
-    "pyttsx3>=2.90",
     "soundfile>=0.12.1",
     "scipy>=1.10.0",
 ]

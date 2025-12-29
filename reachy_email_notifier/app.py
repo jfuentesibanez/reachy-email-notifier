@@ -175,7 +175,7 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
         log(f"🔊 Speaking: {text}")
 
         try:
-            import pyttsx3
+            import subprocess
             import soundfile as sf
             from scipy import signal
 
@@ -184,11 +184,18 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                 temp_path = tmp_file.name
 
             try:
-                # Generate TTS audio
-                engine = pyttsx3.init()
-                engine.setProperty('rate', 150)  # Speed of speech
-                engine.save_to_file(text, temp_path)
-                engine.runAndWait()
+                # Generate TTS audio using espeak-ng directly
+                # This is more reliable than pyttsx3
+                result = subprocess.run(
+                    ['espeak-ng', '-w', temp_path, '-s', '150', text],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if result.returncode != 0:
+                    log(f"⚠️  espeak-ng error: {result.stderr}")
+                    return
 
                 # Load the audio file
                 data, samplerate_in = sf.read(temp_path, dtype='float32')
@@ -205,6 +212,11 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
                 if len(data.shape) > 1:
                     data = np.mean(data, axis=1)
 
+                # Ensure data is 1D float32 numpy array
+                data = np.asarray(data, dtype='float32')
+                if len(data.shape) > 1:
+                    data = data.flatten()
+
                 # Play audio through Reachy's speaker
                 reachy_mini.media.start_playing()
                 chunk_size = 1024
@@ -214,18 +226,21 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
 
                 # Wait for audio to finish (approximate)
                 duration = len(data) / samplerate_out
-                time.sleep(duration)
+                time.sleep(duration + 0.5)  # Add buffer
 
                 reachy_mini.media.stop_playing()
+                log("✅ Speech completed successfully")
 
             finally:
                 # Clean up temp file
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
 
+        except FileNotFoundError:
+            log(f"⚠️  espeak-ng not found. Install with: sudo apt install espeak-ng")
         except ImportError as e:
             log(f"⚠️  TTS dependencies not available: {e}")
-            log("Install with: pip install pyttsx3 soundfile scipy")
+            log("Install with: pip install soundfile scipy")
         except Exception as e:
             log(f"Error during speech: {e}")
             log(f"Traceback: {traceback.format_exc()}")
