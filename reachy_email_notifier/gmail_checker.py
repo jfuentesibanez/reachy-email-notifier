@@ -83,7 +83,6 @@ class GmailChecker:
             messages = results.get('messages', [])
 
             if not messages:
-                print(f"[GMAIL_API] No unread emails in inbox", file=sys.stderr, flush=True)
                 self.last_check_time = datetime.now()
                 return 0
 
@@ -93,16 +92,11 @@ class GmailChecker:
             # First run - just store the latest ID and return 0
             if self.last_message_id is None:
                 self.last_message_id = latest_message_id
-                print(f"[GMAIL_API] First run - tracking message ID: {latest_message_id[:12]}",
-                      file=sys.stderr, flush=True)
-                print(f"[GMAIL_API] Current inbox unread: {len(messages)}", file=sys.stderr, flush=True)
                 self.last_check_time = datetime.now()
                 return 0
 
             # Check if there are new messages
             if latest_message_id == self.last_message_id:
-                print(f"[GMAIL_API] No new emails (latest ID unchanged: {latest_message_id[:12]})",
-                      file=sys.stderr, flush=True)
                 self.last_check_time = datetime.now()
                 return 0
 
@@ -113,10 +107,6 @@ class GmailChecker:
                     break
                 new_email_count += 1
 
-            print(f"[GMAIL_API] 🎉 {new_email_count} new email(s) detected!", file=sys.stderr, flush=True)
-            print(f"[GMAIL_API] Previous latest: {self.last_message_id[:12]}, New latest: {latest_message_id[:12]}",
-                  file=sys.stderr, flush=True)
-
             # Update to track the new latest message
             self.last_message_id = latest_message_id
             self.last_check_time = datetime.now()
@@ -124,9 +114,7 @@ class GmailChecker:
 
         except Exception as e:
             import sys
-            print(f"[GMAIL_API] Error checking emails: {e}", file=sys.stderr, flush=True)
-            import traceback
-            print(f"[GMAIL_API] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
+            print(f"[GMAIL_API] Error: {e}", file=sys.stderr, flush=True)
             return 0
 
     def get_latest_email_subject(self) -> Optional[str]:

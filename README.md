@@ -23,10 +23,11 @@ A cute email notification app for Reachy Mini robots! Get notified with adorable
 ## Features
 
 - **Real-time Gmail Monitoring**: Securely monitors your Gmail account for new emails
+- **Voice Announcements**: Reachy speaks to announce new emails! 🔊
 - **Cute Robot Animations**:
-  - 👋 One email: Friendly wave
-  - 👍 2-3 emails: Wave + acknowledging head nod
-  - 🎉 4+ emails: Happy celebration dance
+  - 👋 One email: Reachy says "You have a new email. Check your inbox!" then wiggles antennas
+  - 👍 2-3 emails: Announces count, waves antennas + nods head
+  - 🎉 4+ emails: Says "Wow! You have X new emails!" with a happy dance
 - **Privacy-First**: All processing happens locally on your Reachy Mini
 - **Easy Configuration**: Simple setup with Gmail API credentials
 - **Open Source**: MIT licensed, community contributions welcome
@@ -49,21 +50,37 @@ You'll need to create Gmail API credentials:
 
 For detailed instructions, see the [Gmail API Setup Guide](https://github.com/jfuentesibanez/reachy-email-notifier#gmail-api-setup).
 
-### 3. Configure the App
+### 3. Install espeak-ng (for voice)
 
-Place your `credentials.json` file in the app directory on your Reachy Mini.
+SSH into your Reachy Mini and run:
+```bash
+sudo apt update
+sudo apt install -y espeak-ng
+```
 
-### 4. Run!
+### 4. Configure the App
 
-Start the app from your Reachy Mini dashboard. On first run, you'll authenticate with Gmail in your browser.
+Copy your Gmail credentials to Reachy:
+```bash
+scp credentials.json pollen@reachy-mini.local:/home/pollen/.reachy_email_notifier/
+```
+
+### 5. Authenticate
+
+On first run, you'll need to authenticate. Follow the URL in the logs to grant access.
+
+### 6. Run!
+
+Start the app from your Reachy Mini dashboard and enjoy!
 
 ## How It Works
 
 The app:
-1. Monitors your Gmail account every 60 seconds (configurable)
-2. Detects new unread emails
-3. Makes Reachy perform cute animations based on the number of new emails
-4. Shows email subjects in the console output
+1. Monitors your Gmail inbox every 60 seconds (configurable)
+2. Detects new unread emails by tracking message IDs
+3. Reachy speaks to announce the new emails
+4. Performs cute animations (antenna wiggles, head nods, happy dances)
+5. Logs email subjects for your reference
 
 ## Configuration
 
@@ -89,7 +106,8 @@ You can customize the behavior by setting environment variables:
 
 - Reachy Mini robot
 - Gmail account
-- Gmail API credentials (free)
+- Gmail API credentials (free from Google Cloud Console)
+- espeak-ng (for text-to-speech, install via `sudo apt install espeak-ng`)
 
 ## License
 
