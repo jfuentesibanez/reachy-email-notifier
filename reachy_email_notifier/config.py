@@ -3,12 +3,10 @@
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 print("[EMAIL_NOTIFIER_CONFIG] Config module loading...", file=sys.stderr, flush=True)
+
+# Don't load dotenv at import time - it's slow and we don't use .env anyway
 
 
 class Config:

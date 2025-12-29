@@ -10,7 +10,6 @@ setup(
         "google-auth-oauthlib>=1.0.0",
         "google-auth-httplib2>=0.1.0",
         "google-api-python-client>=2.0.0",
-        "python-dotenv>=1.0.0",
     ],
     entry_points={
         "reachy_mini_apps": [
