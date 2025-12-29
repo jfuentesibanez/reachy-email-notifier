@@ -78,12 +78,12 @@ class GmailChecker:
             ).execute()
 
             messages = results.get('messages', [])
-            new_email_count = len(messages)
+            # Use resultSizeEstimate instead of counting returned messages
+            # because Gmail API only returns max 100 messages per page
+            unread_count = results.get('resultSizeEstimate', 0)
 
-            # Debug: Show total results available
-            result_size = results.get('resultSizeEstimate', 0)
             import sys
-            print(f"[GMAIL_API] resultSizeEstimate: {result_size}, messages returned: {new_email_count}",
+            print(f"[GMAIL_API] resultSizeEstimate: {unread_count}, messages returned: {len(messages)}",
                   file=sys.stderr, flush=True)
             if messages:
                 # Show first few message IDs for debugging
@@ -91,7 +91,7 @@ class GmailChecker:
                 print(f"[GMAIL_API] First message IDs: {msg_ids}", file=sys.stderr, flush=True)
 
             self.last_check_time = datetime.now()
-            return new_email_count
+            return unread_count
 
         except Exception as e:
             import sys
