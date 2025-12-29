@@ -74,18 +74,28 @@ class GmailChecker:
             # Query for unread emails
             results = self.service.users().messages().list(
                 userId='me',
-                q='is:unread',
-                maxResults=10
+                q='is:unread'
             ).execute()
 
             messages = results.get('messages', [])
             new_email_count = len(messages)
 
+            # Debug: Show total results available
+            result_size = results.get('resultSizeEstimate', 0)
+            import sys
+            print(f"[GMAIL_API] resultSizeEstimate: {result_size}, messages returned: {new_email_count}",
+                  file=sys.stderr, flush=True)
+            if messages:
+                # Show first few message IDs for debugging
+                msg_ids = [m['id'][:8] for m in messages[:3]]
+                print(f"[GMAIL_API] First message IDs: {msg_ids}", file=sys.stderr, flush=True)
+
             self.last_check_time = datetime.now()
             return new_email_count
 
         except Exception as e:
-            print(f"Error checking emails: {e}")
+            import sys
+            print(f"[GMAIL_API] Error checking emails: {e}", file=sys.stderr, flush=True)
             return 0
 
     def get_latest_email_subject(self) -> Optional[str]:

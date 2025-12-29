@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="reachy-email-notifier",
-    version="1.0.5",
+    version="1.0.6",
     packages=find_packages(),
     install_requires=[
         "google-auth>=2.0.0",
