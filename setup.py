@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="reachy-email-notifier",
-    version="1.0.3",
+    version="1.0.4",
     packages=find_packages(),
     install_requires=[
         "google-auth>=2.0.0",
@@ -14,6 +14,9 @@ setup(
     entry_points={
         "reachy_mini_apps": [
             "reachy_email_notifier = reachy_email_notifier.app:ReachyMiniEmailNotifier",
+        ],
+        "console_scripts": [
+            "reachy-email-notifier = reachy_email_notifier.app:main",
         ],
     },
 )

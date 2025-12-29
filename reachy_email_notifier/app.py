@@ -253,3 +253,20 @@ class ReachyMiniEmailNotifier(ReachyMiniApp):
             log(f"Traceback: {traceback.format_exc()}")
 
 print("[EMAIL_NOTIFIER] Class defined successfully, module fully loaded!", file=sys.stderr, flush=True)
+
+
+def main():
+    """Entry point for the app when run as a script."""
+    print("[EMAIL_NOTIFIER] main() function called!", file=sys.stderr, flush=True)
+    app = ReachyMiniEmailNotifier()
+    print("[EMAIL_NOTIFIER] App instance created, calling wrapped_run()", file=sys.stderr, flush=True)
+    try:
+        app.wrapped_run()
+    except KeyboardInterrupt:
+        print("[EMAIL_NOTIFIER] KeyboardInterrupt received, stopping...", file=sys.stderr, flush=True)
+        app.stop()
+
+
+if __name__ == "__main__":
+    print("[EMAIL_NOTIFIER] __main__ block executing!", file=sys.stderr, flush=True)
+    main()
